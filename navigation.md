@@ -17,7 +17,7 @@
 
 [Examples](examples.md)
 [Download](download.md)
-[Contribute](contribute/index.md)
+[Contribute](contribute.md)
 
 [mdWiki Docs]()
 
