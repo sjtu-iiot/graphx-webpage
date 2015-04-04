@@ -6,12 +6,15 @@
 
   * [About the Tutorials](tutorials.md)
   - - - -
-  * [Official Guide](https://spark.apache.org/docs/0.9.0/graphx-programming-guide.html)
-  * [API Usage](tutorials/dropbox.md)
-  * [Set up MDwiki on IIS](tutorials/iis/iis.md)
+  * # Newcomers
+  * [Git Tutorial](tutorials/git.md)
   - - - -
-  * # Advanced
-  * [GraphX Code Review](tutorials/drive.md)
+  * # API
+  * [Official Guide](https://spark.apache.org/docs/0.9.0/graphx-programming-guide.html)
+  * [API Usage](tutorials/api.md)
+  - - - -
+  * # Code review
+  * [GraphX Code Review](tutorials/codereview/index.md)
 
 [API Docs](docs.md)
 

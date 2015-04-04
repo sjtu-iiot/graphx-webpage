@@ -1,15 +1,22 @@
 About the Tutorials
 ===================
 
-The tutorials don't document MDwiki's core functionality, but provide guides on what you can do with MDwiki, and how to do it.
+The tutorials mainly document three parts, the guides to contribute codes, the guides to use API, and the guides to review the codes of GraphX.
 
-Note: We'd love to have more tutorials and ideas. You can add your own tutorial to this website by sending a pull request to this wiki!
+Note: We'd love to have more tutorials and ideas. You can add your own tutorial to this website by sending a pull request to us.
 
 
 Available Tutorials
 -------------------
 
-  * [Hosting MDwiki on GitHub](tutorials/github.md)
-  * [Hosting MDWiki on Google Drive](tutorials/drive.md)
-  * [Using MDwiki with Dropbox](tutorials/dropbox.md)
-  * [Set up MDwiki with IIS Server](tutorials/iis/iis.md)
+  * [Contributing Codes on GitHub](tutorials/git.md)
+  * Using GraphX and GraphX-algorithm API
+    * [GraphX Official Guide](https://spark.apache.org/docs/0.9.0/graphx-programming-guide.html)
+    * [Using GraphX-algorithm API](tutorials/api.md)
+  * [Reviewing GraphX Codes](tutorials/codereview/index.md)
+    * Partition Strategy
+    * Graph Elements
+    * Creating Graph and Loading Data
+    * Graph Operators
+    * Pregel and Shortest Path Algorithm
+    * PageRank and Triangle Count
