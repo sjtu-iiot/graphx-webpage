@@ -15,6 +15,7 @@
   - - - -
   * # Code review
   * [GraphX Code Review](tutorials/codereview/index.md)
+  * [Graph Generating and Data Loading](tutorials/codereview/createAndLoad.md)
 
 [API Docs](docs.md)
 
