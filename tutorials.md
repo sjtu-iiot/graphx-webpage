@@ -16,7 +16,7 @@ Available Tutorials
   * [Reviewing GraphX Codes](tutorials/codereview/index.md)
     * Partition Strategy
     * Graph Elements
-    * Creating Graph and Loading Data
+    * [Creat the Graph and Data Loading](tutorials/codereview/createAndLoad.md)
     * Graph Operators
     * Pregel and Shortest Path Algorithm
     * PageRank and Triangle Count
