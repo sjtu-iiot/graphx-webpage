@@ -43,7 +43,7 @@ scala> val tmp = graph.outerJoinVertices(graph.outDegrees) {
 scala> tmp.vertices.take(10)
 res0: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,1), (672890,0), (129434,2), (194402,1), (199516,20), (332918,3), (170792,9), (386896,18), (691634,11), (291526,7)) 
   ```
-#### set the weight on the edges based on the degree using `mapTriplets` by :
+#### Set the weight on the edges based on the degree using `mapTriplets` by :
 
   ```scala
 scala> val edgetmp = tmp.mapTriplets( e => 1.0/e.srcAttr )
@@ -58,7 +58,8 @@ scala> initialGraph.vertices.take(10)
 res2: Array[(org.apache.spark.graphx.VertexId, Double)] = Array((354796,1.0), (672890,1.0), (129434,1.0), (194402,1.0), (199516,1.0), (332918,1.0), (170792,1.0), (386896,1.0), (691634,1.0), (291526,1.0))
   ```
 
-#### Now the vertices in `initialGraph` are assigned initial PageRank `1.0`, and the edges in `initialGraph` store the out-degree information. These operations can be completed in one-line code::
+Now the vertices in `initialGraph` are assigned initial PageRank `1.0`, and the edges in `initialGraph` store the out-degree information.
+####  These operations can be completed in one-line code:
 
   ```scala
 val initialGraph: Graph[Double, Double] = graph
@@ -69,7 +70,7 @@ val initialGraph: Graph[Double, Double] = graph
   .mapVertices((id, attr) => 1.0)
   ```
 
-#### Assume `val initialMessage = 0.0`, the number of iterations `val numIter = 100` (you can take a smaller value), and the damping factor `val resetProb = 0.15`. Other message handlers are programmed according to the PageRank algorithm:
+Assume `val initialMessage = 0.0`, the number of iterations `val numIter = 100` (you can take a smaller value), and the damping factor `val resetProb = 0.15`. Other message handlers are programmed according to the PageRank algorithm:
 
   ```scala
 def vertexProgram(id: VertexId, attr: Double, msgSum: Double): Double =
@@ -262,3 +263,5 @@ Reference
 1. [GraphX Official Guide](http://spark.apache.org/docs/latest/graphx-programming-guide.html#pagerank)
 
 2. [note.yuhc.me](http://note.yuhc.me/2015/03/graphx-pagerank/)
+
+3. [PageRank-Wikipedia](http://en.wikipedia.org/wiki/PageRank)
