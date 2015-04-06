@@ -18,5 +18,5 @@ Available Tutorials
     * Graph Elements
     * [Graph Generating and Data Loading](tutorials/codereview/createAndLoad.md)
     * Graph Operators
-    * Pregel and Shortest Path Algorithm
+    * [Pregel and Shortest Path Algorithm](tutorials/codereview/pregelAndSPA.md)
     * PageRank and Triangle Count

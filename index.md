@@ -36,7 +36,7 @@ Start Your GraphX Journey
 -------------------------
 
 * Start from [Tutorials](tutorials.md)
-* Start from the [Download page][download]
+* Start from the [Download page](download)
 * Start from [How to contribute](contribute.md)
 
 - - - -
