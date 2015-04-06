@@ -1,5 +1,5 @@
-Create the Graph and Data Loading
-====================
+Graph Generating and Data Loading
+=================================
 
 This tutorial describes the most basic operations in GraphX, which is constructing a graph.
 
@@ -307,7 +307,7 @@ Source Code Analysis
 Reference
 ---------
 
-1. [Official Guide](http://spark.apache.org/docs/latest/graphx-programming-guide.html)
+1. [Apache GraphX Official Guide](http://spark.apache.org/docs/latest/graphx-programming-guide.html)
 
 2. [Snap Dataset Information](https://snap.stanford.edu/data/web-Google.html)
 
