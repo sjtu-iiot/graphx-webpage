@@ -67,7 +67,7 @@ The codes of `TriangleCount` is shown as follows. Some comments are added to hel
     // Construct set representations of the neighborhoods
     val nbrSets: VertexRDD[VertexSet] =
       g.collectNeighborIds(EdgeDirection.Either).mapValues { (vid, nbrs) =>
-        // Why the code specifies the capacity of `set`?
+        
         val set = new VertexSet(4)
         var i = 0
         // Store the neighbors in the VertexSet
@@ -119,3 +119,11 @@ The codes of `TriangleCount` is shown as follows. Some comments are added to hel
   } // end of TriangleCount
 }
   ```
+
+
+Reference
+---------
+
+1. [GraphX Official Guide](http://spark.apache.org/docs/latest/graphx-programming-guide.html#triangle-counting)
+
+2. [note.yuhc.me](http://note.yuhc.me/2015/03/graphx-triangle-count-label-propagation/)
