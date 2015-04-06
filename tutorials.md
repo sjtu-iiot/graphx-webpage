@@ -19,4 +19,4 @@ Available Tutorials
     * Creating Graph and Loading Data
     * Graph Operators
     * Pregel and Shortest Path Algorithm
-    * PageRank and Triangle Count
+    * PageRank and [Triangle Count](tutorials/codereview/TriangleCount.md)
