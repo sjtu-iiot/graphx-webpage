@@ -25,7 +25,7 @@ With these functions, information about the graph can be obtained easily.
 	* `outDegrees` returns out-degree of each vertex.
 	* `degrees` is the sum of `inDegrees` and `outDegrees`. Note that vertices whose in-degree are 0 won't be included in the result RDD.
 
-[GraphOps]() calls the method `degreesRDD` to compute the neighboring vertex degrees. It ignores the directions of the edges, and every vertex sends `1`s to its neighbors.
+[GraphOps](https://github.com/apache/spark/blob/master/graphx/src/main/scala/org/apache/spark/graphx/GraphOps.scala) calls the method `degreesRDD` to compute the neighboring vertex degrees. It ignores the directions of the edges, and every vertex sends `1`s to its neighbors.
 
 ```
 @transient lazy val inDegrees: VertexRDD[Int] = degreesRDD(EdgeDirection.In).setName("GraphOps.inDegrees")
@@ -257,12 +257,13 @@ class Graph[VD, ED] {
 
 	It realized the function of filter for the vertices restriction.
 
-3. mask opertor:
-For example, we might run connected components using the graph with missing vertices and then restrict the answer to the valid subgraph.
+3. `subgraph` operator restricts a graph based on the properties in the graph itself. However, `mask` operator can restrict a graph based on the properties in another related graph.
+
+	For example, we can run `connectedComponents` first, and restrict the answer to the valid subgraph.
 	```
 	// Run Connected Components
-	scala> val ccGraph = graph.connectedComponents() // No longer contains missing field
-	// Remove missing vertices as well as the edges to connected to them
+	scala> val ccGraph = graph.connectedComponents()
+	// Remove vertices whose ids are greater than 500,000
 	scala> val validGraph = graph.subgraph(vpred = (id, attr) => id > 500000)
 	// Restrict the answer to the valid subgraph
 	scala> val validCCGraph = ccGraph.mask(validGraph)
@@ -270,9 +271,9 @@ For example, we might run connected components using the graph with missing vert
 	res1: Array[(org.apache.spark.graphx.VertexId, org.apache.spark.graphx.VertexId)] = Array((672890,0), (691634,0), (513652,0), (620402,0), (806938,0), (637370,0), (605508,0), (884124,0), (769382,0), (806480,0))
 	```
 
-We can find that we successfully realized our target. The new subgraph is from the original graph while it also has the property from the input graph.
+	We can find that we successfully realized our target. The new subgraph is from the original graph while it also has the property from the input `validCCGraph`.
 
-4. groupEdges:
+4. `groupEdges` is easy to use, which combines two edges:
 	```
 	scala> val subgraph = graph.groupEdges((a, b) => a+b)
 	```
@@ -281,69 +282,69 @@ We can find that we successfully realized our target. The new subgraph is from t
 Join Operators
 --------------
 
-### Joining Vertices with RDDs Function
+### Joining Vertex RDDs
 
-Join RDDs with the graph. Join operators are designed to upgrade the graph by input RDD table. It provides us another way to modify the vertices' porperty.
-	```
-	def joinVertices[U](table: RDD[(VertexID, U)])(mapFunc: (VertexID, VD, U) => VD): Graph[VD, ED]
-	def outerJoinVertices[U, VD2](other: RDD[(VertexID, U)])
-    	(mapFunc: (VertexID, VD, Option[U]) => VD2)
-      : Graph[VD2, ED]
-	```
+Join operators are designed to upgrade the graph by input RDD table. It provides us another way to modify the vertices' properties.
+```
+def joinVertices[U](table: RDD[(VertexID, U)])(mapFunc: (VertexID, VD, U) => VD): Graph[VD, ED]
+def outerJoinVertices[U, VD2](other: RDD[(VertexID, U)])
+  	(mapFunc: (VertexID, VD, Option[U]) => VD2)
+    : Graph[VD2, ED]
+```
 
-1. joinVertices:
-In many cases it is necessary to join data from external collections (RDDs) with graphs. For example, we might have extra user properties that we want to merge with an existing graph or we might want to pull vertex properties from one graph into another. Such tasks will be accomplished by ```joinVertices``` function.
-
-	```
-		/**
-	 	* @example This function is used to update the vertices with new
-	 	* values based on external data. For example we could add the out
-	 	* degree to each vertex record
-	 	*
-	 	* {{{
-	 	* val rawGraph: Graph[Int, Int] = GraphLoader.edgeListFile(sc, "webgraph").mapVertices((_, _) => 0)
-	 	* val outDeg = rawGraph.outDegrees
-	 	* val graph = rawGraph.joinVertices[Int](outDeg)
-	 	*   ((_, _, outDeg) => outDeg)
-	 	* }}}
-	 	*/
-		def joinVertices[U: ClassTag](table: RDD[(VertexId, U)])(mapFunc: (VertexId, VD, U) => VD)
-	  	: Graph[VD, ED] = {
-	  	val uf = (id: VertexId, data: VD, o: Option[U]) => {
-    		o match {
-      	  	case Some(u) => mapFunc(id, data, u)
-      	  	case None => data
-    		}
-	  	}
-	  	graph.outerJoinVertices(table)(uf)
-		}
-	```
-
-	The joinVertices operator joins the vertices with the input RDD table and returns a new graph with the vertex properties obtained by applying map function to the result of the joined vertices. Vertices without a matching value in the RDD retain their original value.
-
-2. The more general ```outerJoinVertice```s behaves similarly to ```joinVertices```. Unlike that joinVertices sets a default action, the map function in ```outerJoinVertices``` takes an option type for those vertices which don't have a matching value. For example, we can setup a graph for PageRank by initializing vertex properties with their outDegree.
+1. `joinVertices` operator
+	In many cases it is necessary to join data from external collections (RDDs) with graphs. For example, we might have extra user properties that we want to merge with an existing graph or we might want to pull vertex properties from one graph into another. Such tasks will be accomplished by `joinVertices` function.
 
 	```
-		/**
-	 	* @example This function is used to update the vertices with new values based on external data.
-	 	*          For example we could add the out-degree to each vertex record:
-	 	*
-	 	* {{{
-	 	* val rawGraph: Graph[_, _] = Graph.textFile("webgraph")
-	 	* val outDeg: RDD[(VertexId, Int)] = rawGraph.outDegrees
-	 	* val graph = rawGraph.outerJoinVertices(outDeg) {
-	 	*   (vid, data, optDeg) => optDeg.getOrElse(0)
-	 	* }
-	 	* }}}
-	 	*/
-		def outerJoinVertices[U: ClassTag, VD2: ClassTag](other: RDD[(VertexId, U)])
-    	(mapFunc: (VertexId, VD, Option[U]) => VD2)(implicit eq: VD =:= VD2 = null)
-	  	: Graph[VD2, ED]
+	/**
+ 	* @example This function is used to update the vertices with new
+ 	* values based on external data. For example we could add the out
+ 	* degree to each vertex record
+ 	*
+ 	* {{{
+ 	* val rawGraph: Graph[Int, Int] = GraphLoader.edgeListFile(sc, "webgraph").mapVertices((_, _) => 0)
+ 	* val outDeg = rawGraph.outDegrees
+ 	* val graph = rawGraph.joinVertices[Int](outDeg)
+ 	*   ((_, _, outDeg) => outDeg)
+ 	* }}}
+ 	*/
+	def joinVertices[U: ClassTag](table: RDD[(VertexId, U)])(mapFunc: (VertexId, VD, U) => VD)
+  	: Graph[VD, ED] = {
+  	val uf = (id: VertexId, data: VD, o: Option[U]) => {
+  		o match {
+    	  	case Some(u) => mapFunc(id, data, u)
+    	  	case None => data
+  		}
+  	}
+  	graph.outerJoinVertices(table)(uf)
+	}
+	```
+
+	The joinVertices operator joins the vertices with the input RDD table and returns a new graph with the vertex properties obtained by applying map function to the result of the joined vertices. Vertices without a matching value in the RDD will retain their original value.
+
+2. The more general `outerJoinVertices` behaves similarly to `joinVertices`. Unlike that joinVertices sets a default action, the map function in `outerJoinVertices` takes an option type for those vertices which don't have a matching value. For example, we can setup a graph for PageRank by initializing vertex properties with their outDegree.
+
+	```
+	/**
+ 	* @example This function is used to update the vertices with new values based on external data.
+ 	*          For example we could add the out-degree to each vertex record:
+ 	*
+ 	* {{{
+ 	* val rawGraph: Graph[_, _] = Graph.textFile("webgraph")
+ 	* val outDeg: RDD[(VertexId, Int)] = rawGraph.outDegrees
+ 	* val graph = rawGraph.outerJoinVertices(outDeg) {
+ 	*   (vid, data, optDeg) => optDeg.getOrElse(0)
+ 	* }
+ 	* }}}
+ 	*/
+	def outerJoinVertices[U: ClassTag, VD2: ClassTag](other: RDD[(VertexId, U)])
+  	(mapFunc: (VertexId, VD, Option[U]) => VD2)(implicit eq: VD =:= VD2 = null)
+  	: Graph[VD2, ED]
 	```
 
 ### How to use
-1. ```joinVertices``` operator:　
-We join outDeg to rawGraph.
+
+1. Join `outDeg` to `rawGraph` with `joinVertices` operator:
 	```
 	scala> val rawGraph = graph.mapVertices((id, attr) => 0)
 	scala> val outDeg = rawGraph.outDegrees
@@ -354,11 +355,10 @@ We join outDeg to rawGraph.
 	res2: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,1), (672890,0), (129434,2), (194402,1), (199516,20))
 	```
 
-2. ```outerJoinVertices``` operator:
-Compared to joinVertics, we will add a case to realize the option in outerJoinVertices.
+2. Compared to `joinVertics`, we can add a `case-condition` to realize the condition-checking in `outerJoinVertices`:
 	```
 	scala> val tmp = rawGraph.outerJoinVertices[Int, Int](outDeg)((_, _, optDeg) => optDeg.getOrElse(0))
-	// Also canbe written in this way
+	// Also can be written in this way
 	//val tmp = rawGraph.outerJoinVertices[Int, Int](outDeg){(_, _, optDeg) => optDeg match {
 	//	case Some(outDeg) => outDeg
 	//	case None => 0
@@ -374,48 +374,54 @@ Compared to joinVertics, we will add a case to realize the option in outerJoinVe
 Neighborhood Aggregation
 ------------------------
 
-### Neighborhood Aggregation Function:
-Aggregate information about adjacent triplets. Among the three operators, aggregateMessages is the most important. It's a evolution from mapreduceTriplet which has been replaced. And most algorithms' implementation will depend on it.
-	```
-	def collectNeighborIds(edgeDirection: EdgeDirection): VertexRDD[Array[VertexID]]
-	def collectNeighbors(edgeDirection: EdgeDirection): VertexRDD[Array[(VertexID, VD)]]
-	def aggregateMessages[Msg: ClassTag](
-		sendMsg: EdgeContext[VD, ED, Msg] => Unit,
-      	mergeMsg: (Msg, Msg) => Msg,
-      	tripletFields: TripletFields = TripletFields.All)
-      : VertexRDD[A]
-	```
+### Neighborhood aggregation
 
-1. The ```collectNeighborIds``` operator returns the set of neighboring IDs for each vertex. Note that neither collectNeighborIds (nor collectNeighbors) doesn't support EdgeDirection.Both.
-2. The ```collectNeighbors``` returns the vertex set of neighboring vertex attributes for each vertex. Note that  it could be highly inefficient on power-law graphs where high degree vertices may force a large amount of information to be collected to a single location.
-3. The core aggregation operation in GraphX is ```aggregateMessages```. This operator applies a user defined ```sendMsg``` function to each edge triplet in the graph and then uses the ```mergeMsg``` function to aggregate those messages at their destination vertex.
+These functions can aggregate information about adjacent triplets. Among the three operators, `aggregateMessages` is the most important. It's a evolution from MapReduce Triplet which has been replaced. Besides, most algorithms' implementation depend on it.
 
-	The user defined ```sendMsg``` function takes an EdgeContext, which exposes the source and destination attributes along with the edge attribute and functions to send messages to the source and destination attributes. The user defined ```mergeMsg``` function takes two messages destined to the same vertex and yields a single message. The ```aggregateMessages``` operator returns a VertexRDD[Msg] containing the aggregate message with type Msg destined to each vertex. Vertices that did not receive a message are not included in the returned VertexRDD.
+```
+def collectNeighborIds(edgeDirection: EdgeDirection): VertexRDD[Array[VertexID]]
+def collectNeighbors(edgeDirection: EdgeDirection): VertexRDD[Array[(VertexID, VD)]]
+def aggregateMessages[Msg: ClassTag](
+	sendMsg: EdgeContext[VD, ED, Msg] => Unit,
+    	mergeMsg: (Msg, Msg) => Msg,
+    	tripletFields: TripletFields = TripletFields.All)
+    : VertexRDD[A]
+```
 
-	Think of ```sendMsg``` as the map function and think of ```mergeMsg``` as the reduce function. ```aggregateMessages``` operator runs in a similar way with mapreduce.
+1. The `collectNeighborIds` operator returns the set of neighborhood IDs for each vertex.
 
-	In addition, ```aggregateMessages``` takes an optional tripletsFields which indicates what data is accessed in the EdgeContext.
+	Note: Neither `collectNeighborIds` (nor `collectNeighbors`) doesn't support `EdgeDirection.Both`.
+
+2. The `collectNeighbors` returns the vertex set of neighboring vertex attributes for each vertex.
+
+	Note: It could be highly inefficient on power-law graphs where high degree vertices may force a large amount of information to be collected to a single location.
+
+3. The core aggregation operation in GraphX is `aggregateMessages`. This operator applies a user defined `sendMsg` function to each edge triplet in the graph and then uses the `mergeMsg` function to aggregate those messages at their destination vertex.
+
+	The user defined `sendMsg` function takes an `EdgeContext` as input, which exposes the source and destination attributes along with the edge attribute and functions to send messages to the source and destination attributes. The user defined `mergeMsg` function takes two messages destined to the same vertex and yields a single message. The `aggregateMessages` operator returns a `VertexRDD[Msg]` containing the aggregate message with type Msg destined to each vertex. Vertices that did not receive a message are not included in the returned VertexRDD.
+
+	Note: Consider `sendMsg` as the map function and `mergeMsg` as the reduce function. `aggregateMessages` operator runs in a similar way with MapReduce.
+
+	In addition, `aggregateMessages` takes an optional tripletsFields which indicates what data is accessed in the EdgeContext.
 
 ### How to use
-1. ```collectNeighborIds``` operator:
-We want to get the set of out-direction neighboring IDs for each vertex.
+
+1. We can get the set of out-direction neighboring IDs for each vertex with `collectNeighborIds` operator.
 	```
 	scala> val tmp = graph.collectNeighborIds(EdgeDirection.Out)
 	scala> tmp.take(10)
 	res1: Array[(org.apache.spark.graphx.VertexId, Array[org.apache.spark.graphx.VertexId])] = Array((354796,Array(798944)), (672890,Array()), (129434,Array(110771, 119943)), (194402,Array(359291)), (199516,Array(26483, 190323, 193759, 280401, 329066, 342523, 367518, 398314, 417194, 427451, 458892, 459074, 485460, 502995, 505260, 514621, 660407, 798276, 810885, 835966)), (332918,Array(12304, 89384, 267989)), (170792,Array(227187, 255153, 400178, 453412, 512326, 592923, 663311, 666734, 864151)), (386896,Array(109021, 155460, 200406, 204397, 282107, 378570, 427843, 602779, 616132, 629079, 669605, 717650, 727162, 761159, 796410, 832809, 890838, 891178)), (691634,Array(13996, 32163, 33185, 39682, 193103, 197677, 520483, 598034, 727805, 747975, 836657)), (291526,Array(206053, 271366, 383159, 418...
 	```
 
-2. collectNeighbors operator:
-We want to get the vertex set of neighboring vertex attributes for each vertex instead of the vertex IDs.
+2. We can get the vertex set of neighboring vertex attributes for each vertex instead of the vertex IDs with `collectNeighbors` operator.
 	```
 	scala> val tmp = graph.collectNeighbors(EdgeDirection.Out)
 	scala> tmp.take(10)
 	res1: Array[(org.apache.spark.graphx.VertexId, Array[(org.apache.spark.graphx.VertexId, Int)])] = Array((354796,Array((798944,1))), (672890,Array()), (129434,Array((110771,1), (119943,1))), (194402,Array((359291,1))), (199516,Array((26483,1), (190323,1), (193759,1), (280401,1), (329066,1), (342523,1), (367518,1), (398314,1), (417194,1), (427451,1), (458892,1), (459074,1), (485460,1), (502995,1), (505260,1), (514621,1), (660407,1), (798276,1), (810885,1), (835966,1))), (332918,Array((12304,1), (89384,1), (267989,1))), (170792,Array((227187,1), (255153,1), (400178,1), (453412,1), (512326,1), (592923,1), (663311,1), (666734,1), (864151,1))), (386896,Array((109021,1), (155460,1), (200406,1), (204397,1), (282107,1), (378570,1), (427843,1), (602779,1), (616132,1), (629079,1), (669605,1), (717...
 	```
 
-3. aggregateMessages operator:
-Suppose the vertex IDs are the ages of the people. We want to find the number of people who are older than each person, and the average age of those older people using aggregateMessages
-Firstly, we generate a graph with 100 vertices.
+3. Suppose the vertex IDs are the ages of the people. We want to find the number of people who are older than each person, and the average age of those older people. We can use `aggregateMessages` operator.
+	Firstly, let's generate a random graph with 100 vertices.
 	```
 	// Include Corresponding Classes
 	scala> import org.apache.spark._
@@ -432,7 +438,8 @@ Firstly, we generate a graph with 100 vertices.
 	scala> graph.edges.take(10)
 	res2: Array[org.apache.spark.graphx.Edge[Int]] = Array(Edge(0,0,1), Edge(0,1,1), Edge(0,1,1), Edge(0,2,1), Edge(0,3,1), Edge(0,3,1), Edge(0,7,1), Edge(0,11,1), Edge(0,15,1), Edge(0,21,1))
 	```
-	Then, we use aggregateMessages to calculate the target.
+
+	Then, use `aggregateMessages` to calculate the target:
 	```
 	scala> val olderPeople: VertexRDD[(Int, Double)] = graph.aggregateMessages[(Int, Double)] (
      | triplet => { //Map Function
@@ -459,25 +466,23 @@ Firstly, we generate a graph with 100 vertices.
 	...
 	```
 
+
 Cache Operators
 ---------------
 
 ### Caching Fuction
-Cache the graphs. It's a common tools to accelerate the speed and save the time.
-	```
-	def persist(newLevel: StorageLevel = StorageLevel.MEMORY_ONLY): Graph[VD, ED]
-	def cache(): Graph[VD, ED]
-	def unpersistVertices(blocking: Boolean = true): Graph[VD, ED]
-	```
 
-In Spark, RDDs are not persisted in memory by default. To avoid recomputation, they must be explicitly cached when using them multiple times. Graphs in GraphX behave the same way. **When using a graph multiple times, make sure to call Graph.cache() on it first.**
-
-### How to use
+It's a common tools to accelerate the speed and save the time.
 ```
-Graph.cache()
+def persist(newLevel: StorageLevel = StorageLevel.MEMORY_ONLY): Graph[VD, ED]
+def cache(): Graph[VD, ED]
+def unpersistVertices(blocking: Boolean = true): Graph[VD, ED]
 ```
 
+In Spark, RDDs are not persisted in memory by default. To avoid recomputation, they must be explicitly cached when using them multiple times. Graphs in GraphX behave the same way. **When using a graph multiple times, make sure to call `Graph.cache()` on it first.**
 
 
-##Reference
-1.[GraphX Programming Guide](http://spark.apache.org/docs/latest/graphx-programming-guide.html#graph-operators)
+Reference
+---------
+
+1. [GraphX Programming Guide](http://spark.apache.org/docs/latest/graphx-programming-guide.html#graph-operators)
