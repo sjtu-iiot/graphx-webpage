@@ -16,6 +16,7 @@
   * # Code review
   * [GraphX Code Review](tutorials/codereview/index.md)
   * [Graph Generating and Data Loading](tutorials/codereview/createAndLoad.md)
+  * [Graph Operators](tutorials/codereview/graphOperators.md)
   * [Pregel and Shortest Path Algorithm](tutorials/codereview/pregelAndSPA.md)
 
 [API Docs](docs.md)
