@@ -7,7 +7,7 @@ Graphs are inherently recursive data structures. Many important graph algorithms
 
 The following is the type signature of the Pregel operator as well as a sketch of its implementation:
 
-```
+```scala
 def pregel[A]
     (initialMsg: A,
      maxIter: Int = Int.MaxValue,
@@ -67,7 +67,7 @@ Note: The relaxation operation. If distance from _a_ to _c_ `dis[a][c]` is longe
 
 Import the graph, define the source vertex, and initialize the distance used to be iterated (we will use Dijkstra’s algorithm):
 
-```
+```scala
 scala> import org.apache.spark._
 scala> import org.apache.spark.graphx._
 scala> import org.apache.spark.rdd.RDD
@@ -83,7 +83,7 @@ Note: For the dataset we used, you can reference [Graph Generating and Data Load
 
 Then use Pregel API simply by
 
-```
+```scala
 scala> val sssp = g.pregel(Double.PositiveInfinity)(
      |   (id, dist, newDist) => math.min(dist, newDist),
      |   triplet => {
@@ -100,7 +100,7 @@ scala> val sssp = g.pregel(Double.PositiveInfinity)(
 
 View the result of it:
 
-```
+```scala
 scala> sssp.vertices.take(10).mkString("\n")
 res0: String =
 (354796,11.0)
@@ -127,7 +127,7 @@ Shortest-Path algorithm has also been provided in [lib/ShortestPaths.scala][]. I
 * `vertexProgram` calls addMaps and does the same thing.
 * `incrementMap` increases the distance of the next hop (as all weights of the edges are considered as 1). The direction of the iteration is a bit strange–it jumps from the destination vertex to the source vertex on a edge. But of course it doesn’t affect the result.
 
-```
+```scala
 object ShortestPaths {
   ...
   def run[VD, ED: ClassTag](graph: Graph[VD, ED], landmarks: Seq[VertexId]): Graph[SPMap, ED] = {

@@ -11,9 +11,8 @@ Note: If there is any mistakes or typos in the tutorials, do not hesitate to sen
 Available Tutorials
 -------------------
 
-* Partition Strategy
-* Graph Elements
-* [Graph Generating and Data Loading](tutorials/codereview/createAndLoad.md)
-* Graph Operators
-* [Pregel and Shortest Path Algorithm](tutorials/codereview/pregelAndSPA.md)
+* [Partition Strategy and Graph Elements](partitionAndElements.md)
+* [Graph Generating and Data Loading](createAndLoad.md)
+* [Graph Operators](graphOperators.md)
+* [Pregel and Shortest Path Algorithm](pregelAndSPA.md)
 * PageRank and Triangle Count
