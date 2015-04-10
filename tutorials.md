@@ -14,8 +14,7 @@ Available Tutorials
     * [GraphX Official Guide](https://spark.apache.org/docs/0.9.0/graphx-programming-guide.html)
     * [Using GraphX-algorithm API](tutorials/api.md)
   * [Reviewing GraphX Codes](tutorials/codereview/index.md)
-    * Partition Strategy
-    * Graph Elements
+    * [Partition Strategy and Graph Elements](tutorials/codereview/partitionAndElements.md)
     * [Graph Generating and Data Loading](tutorials/codereview/createAndLoad.md)
     * [Graph Operators](tutorials/codereview/graphOperators.md)
     * [Pregel and Shortest Path Algorithm](tutorials/codereview/pregelAndSPA.md)
