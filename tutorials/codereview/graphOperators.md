@@ -8,7 +8,7 @@ Fundamental Infomation Interface
 
 GraphX contains the following five fundamental functions to query for the graph's attributes:
 
-```
+```scala
 val numEdges: Long
 val numVertices: Long
 val inDegrees: VertexRDD[Int]
@@ -27,7 +27,7 @@ With these functions, information about the graph can be obtained easily.
 
 [GraphOps](https://github.com/apache/spark/blob/master/graphx/src/main/scala/org/apache/spark/graphx/GraphOps.scala) calls the method `degreesRDD` to compute the neighboring vertex degrees. It ignores the directions of the edges, and every vertex sends `1`s to its neighbors.
 
-```
+```scala
 @transient lazy val inDegrees: VertexRDD[Int] = degreesRDD(EdgeDirection.In).setName("GraphOps.inDegrees")
 @transient lazy val outDegrees: VertexRDD[Int] = degreesRDD(EdgeDirection.Out).setName("GraphOps.outDegrees")
 @transient lazy val degrees: VertexRDD[Int] = degreesRDD(EdgeDirection.Either).setName("GraphOps.degrees")
@@ -47,7 +47,7 @@ private def degreesRDD(edgeDirection: EdgeDirection): VertexRDD[Int] = {
 
 Now, let's start a simple example. Firstly, we will create a graph following the steps in [graphOperators](graphOperators.md).
 
-```
+```scala
 import org.apache.spark._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
@@ -57,29 +57,29 @@ val graph = GraphLoader.edgeListFile(sc, "hdfs://192.168.17.240:9222/input/yuhc/
 Note: In the following tutorials, we will use this graph for many times. To be brief, we won't refer to it again.
 
 1. `numEdges` operator
-```
+```scala
 scala> val tmp = graph.numEdges
 tmp: Long = 5105039
 ```
 
 2. `numVertices` operator
-```
+```scala
 scala> val tmp = graph.numVertices
 tmp: Long = 875713
 ```
 
 3. `degrees` operators
-```
+```scala
 scala> val tmp = graph.inDegrees
 scala> tmp.take(10)
 res0: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,2), (672890,1), (129434,2), (194402,2), (199516,28), (332918,3), (170792,1), (386896,3), (691634,71), (291526,9))
 ```
-```
+```scala
 scala> val tmp = graph.outDegrees
 scala> tmp.take(10)
 res1: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,1), (129434,2), (194402,1), (199516,20), (332918,3), (170792,9), (386896,18), (691634,11), (291526,7), (513652,1))
 ```
-```
+```scala
 scala> val tmp = graph.degrees
 scala> tmp.take(10)
 res0: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,3), (672890,1), (129434,4), (194402,3), (199516,48), (332918,6), (170792,10), (386896,21), (691634,82), (291526,16))
@@ -93,7 +93,7 @@ Property Operators
 
 These five functions can be used to transform vertex and edge attributes (using map operation):
 
-```
+```scala
 def mapVertices[VD2](map: (VertexID, VD) => VD2): Graph[VD2, ED]
 def mapEdges[ED2](map: Edge[ED] => ED2): Graph[VD, ED2]
 def mapEdges[ED2](map: (PartitionID, Iterator[Edge[ED]]) => Iterator[ED2]): Graph[VD, ED2]
@@ -106,7 +106,7 @@ They are divided into three groups, map to vertices, map to edges and map to tri
 1. `mapVertices` can transform each vertex attribute in graph. map is the function from a vertex object to a new vertex value. The new graph structure is the same as the old one, so the underlying index structures can be reused. VD2 is the new vertex data type.
 
 2. `mapEdges` can transform each edge attribute in graph. It has two duplicated functions:
-	```
+	```scala
 	def mapEdges[ED2](map: Edge[ED] => ED2): Graph[VD, ED2]
 	def mapEdges[ED2](map: (PartitionID, Iterator[Edge[ED]]) => Iterator[ED2]): Graph[VD, ED2]
 	```
@@ -119,59 +119,59 @@ They are divided into three groups, map to vertices, map to edges and map to tri
 ### How to use
 
 1. Take ten nodes from the graph:
-	```
+	```scala
 	scala> graph.vertices.take(10)
 	res1: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,1), (672890,1), (129434,1), (194402,1), (199516,1), (332918,1), (170792,1), (386896,1), (691634,1), (291526,1))
 	```
 	Each vertex's value is set to 1, which is the default operation. We can set the values to 2 by:
-	```
+	```scala
 	scala> val tmp = graph.mapVertices((id, attr) => attr.toInt * 2)
 	```
 	If we use `tmp.vertices.take(10)` to see the values, it returns
-	```
+	```scala
 	scala> tmp.vertices.take(10)
 	res2: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,2), (672890,2), (129434,2), (194402,2), (199516,2), (332918,2), (170792,2), (386896,2), (691634,2), (291526,2))
 	```
 	Another optimized method is:
-	```
+	```scala
 	scala> val tmp :Graph[Int, Int] = graph.mapVertices((_, attr) => attr * 3)
 	```
 	It contains
-	```
+	```scala
 	res3: Array[(org.apache.spark.graphx.VertexId, Int)] = Array((354796,3), (672890,3), (129434,3), (194402,3), (199516,3), (332918,3), (170792,3), (386896,3), (691634,3), (291526,3))
 	```
 
 2. Take ten edges from the graph:
-	```
+	```scala
 	scala> graph.edges.take(10)
 	```
 	It returns:
-	```
+	```scala
 	res1: Array[org.apache.spark.graphx.Edge[Int]] = Array(Edge(0,11342,1), Edge(0,824020,1), Edge(0,867923,1), Edge(0,891835,1), Edge(1,53051,1), Edge(1,203402,1), Edge(1,223236,1), Edge(1,276233,1), Edge(1,552600,1), Edge(1,569212,1))
 	```
 	Multiply the edges' attributes by 2:
-	```
+	```scala
 	scala> val tmp = graph.mapEdges(e => e.attr.toInt * 2)
 	```
 	Then `tmp.edges.take(10)` returns:
-	```
+	```scala
 	res2: Array[org.apache.spark.graphx.Edge[Int]] = Array(Edge(0,11342,2), Edge(0,824020,2), Edge(0,867923,2), Edge(0,891835,2), Edge(1,53051,2), Edge(1,203402,2), Edge(1,223236,2), Edge(1,276233,2), Edge(1,552600,2), Edge(1,569212,2))
 	```
 
 3. Take ten triplets from the graph and results:
-	```
+	```scala
 	scala> graph.triplets.take(10)
 	```
 	It returns:
-	```
+	```scala
 	res1: Array[org.apache.spark.graphx.EdgeTriplet[Int,Int]] = Array(((0,1),(11342,1),1), ((0,1),(824020,1),1), ((0,1),(867923,1),1), ((0,1),(891835,1),1), ((1,1),(53051,1),1), ((1,1),(203402,1),1), ((1,1),(223236,1),1), ((1,1),(276233,1),1), ((1,1),(552600,1),1), ((1,1),(569212,1),1))
 	```
 	Type in the following code, which sets the edge value to the sum of twice the source vertex value and three times the destination vertex value:
-	```
+	```scala
 	scala> val tmp = graph.mapTriplets(et => et.srcAttr.toInt * 2 + et.dstAttr.toInt * 3)
 	```
 	Now `tmp.triplets.take(10)` returns:
-	```
+	```scala
 	res2: Array[org.apache.spark.graphx.EdgeTriplet[Int,Int]] = Array(((0,1),(11342,1),5), ((0,1),(824020,1),5), ((0,1),(867923,1),5), ((0,1),(891835,1),5), ((1,1),(53051,1),5), ((1,1),(203402,1),5), ((1,1),(223236,1),5), ((1,1),(276233,1),5), ((1,1),(552600,1),5), ((1,1),(569212,1),5))
 	```
 
@@ -184,7 +184,7 @@ Structual Operators
 ### Structure operating functions
 
 Use these four functions, the graph structure can be extracted or processed. Different from Property Operators, Structural operators are means to change the structure of the graph.
-```
+```scala
 class Graph[VD, ED] {
 	def reverse: Graph[VD, ED]
 	def subgraph(epred: EdgeTriplet[VD,ED] => Boolean,
@@ -203,7 +203,7 @@ class Graph[VD, ED] {
 2. The `subgraph` operator returns the graph containing only the vertices and edges that satisfy the predicates. Noted that the predicate takes a vertex object or a triplet and evaluates to true.
 
 	Note: Only edges where both vertices satisfy the vertex predicate are considered.
-	```
+	```scala
 	V' = {v : for all v in V where vpred(v)}
 	E' = {(u,v): for all (u,v) in E where epred((u,v)) && vpred(u) && vpred(v)}
 	```
@@ -218,7 +218,7 @@ class Graph[VD, ED] {
 ### How to use
 
 1. We can find the `SrcID` and `DstID` in the edge attributes are exchanged by `reverse` operator:
-	```
+	```scala
 	scala> val tmp = graph.edges.take(10)
 	tmp: Array[org.apache.spark.graphx.Edge[Int]] = Array(Edge(0,11342,1), Edge(0,824020,1), Edge(0,867923,1), Edge(0,891835,1), Edge(1,53051,1), Edge(1,203402,1), Edge(1,223236,1), Edge(1,276233,1), Edge(1,552600,1), Edge(1,569212,1))
 	scala> tmp.reverse
@@ -226,12 +226,12 @@ class Graph[VD, ED] {
 	```
 
 2. Create the subgraph by
-	```
+	```scala
 	scala> val subgraph = graph.subgraph(epred = e => e.srcId > e.dstId)
 	```
 
 	Count the vertices and edges in the subgraph:
-	```
+	```scala
 	scala> subgraph.vertices.count
 	res1: Long = 875713
 	scala> subgraph.edges.count
@@ -241,12 +241,12 @@ class Graph[VD, ED] {
 	```
 
 	Only edges whose source vertex ID is larger than destination vertex ID are left. Take vertices predicate into account:
-	```
+	```scala
 	scala> val subgraph = graph.subgraph(epred = e => e.srcId > e.dstId, vpred = (id, _) => id > 500000)
 	```
 
 	Count the vertices and edges in the new subgraph:
-	```
+	```scala
 	scala> subgraph.vertices.count
 	res1: Long = 400340
 	scala> subgraph.edges.count
@@ -260,7 +260,7 @@ class Graph[VD, ED] {
 3. `subgraph` operator restricts a graph based on the properties in the graph itself. However, `mask` operator can restrict a graph based on the properties in another related graph.
 
 	For example, we can run `connectedComponents` first, and restrict the answer to the valid subgraph.
-	```
+	```scala
 	// Run Connected Components
 	scala> val ccGraph = graph.connectedComponents()
 	// Remove vertices whose ids are greater than 500,000
@@ -274,7 +274,7 @@ class Graph[VD, ED] {
 	We can find that we successfully realized our target. The new subgraph is from the original graph while it also has the property from the input `validCCGraph`.
 
 4. `groupEdges` is easy to use, which combines two edges:
-	```
+	```scala
 	scala> val subgraph = graph.groupEdges((a, b) => a+b)
 	```
 
@@ -285,7 +285,7 @@ Join Operators
 ### Joining Vertex RDDs
 
 Join operators are designed to upgrade the graph by input RDD table. It provides us another way to modify the vertices' properties.
-```
+```scala
 def joinVertices[U](table: RDD[(VertexID, U)])(mapFunc: (VertexID, VD, U) => VD): Graph[VD, ED]
 def outerJoinVertices[U, VD2](other: RDD[(VertexID, U)])
   	(mapFunc: (VertexID, VD, Option[U]) => VD2)
@@ -295,7 +295,7 @@ def outerJoinVertices[U, VD2](other: RDD[(VertexID, U)])
 1. `joinVertices` operator
 	In many cases it is necessary to join data from external collections (RDDs) with graphs. For example, we might have extra user properties that we want to merge with an existing graph or we might want to pull vertex properties from one graph into another. Such tasks will be accomplished by `joinVertices` function.
 
-	```
+	```scala
 	/**
  	* @example This function is used to update the vertices with new
  	* values based on external data. For example we could add the out
@@ -324,7 +324,7 @@ def outerJoinVertices[U, VD2](other: RDD[(VertexID, U)])
 
 2. The more general `outerJoinVertices` behaves similarly to `joinVertices`. Unlike that joinVertices sets a default action, the map function in `outerJoinVertices` takes an option type for those vertices which don't have a matching value. For example, we can setup a graph for PageRank by initializing vertex properties with their outDegree.
 
-	```
+	```scala
 	/**
  	* @example This function is used to update the vertices with new values based on external data.
  	*          For example we could add the out-degree to each vertex record:
@@ -345,7 +345,7 @@ def outerJoinVertices[U, VD2](other: RDD[(VertexID, U)])
 ### How to use
 
 1. Join `outDeg` to `rawGraph` with `joinVertices` operator:
-	```
+	```scala
 	scala> val rawGraph = graph.mapVertices((id, attr) => 0)
 	scala> val outDeg = rawGraph.outDegrees
 	scala> val tmp = rawGraph.joinVertices[Int](outDeg)((_, _, optDeg) => optDeg)
@@ -356,7 +356,7 @@ def outerJoinVertices[U, VD2](other: RDD[(VertexID, U)])
 	```
 
 2. Compared to `joinVertics`, we can add a `case-condition` to realize the condition-checking in `outerJoinVertices`:
-	```
+	```scala
 	scala> val tmp = rawGraph.outerJoinVertices[Int, Int](outDeg)((_, _, optDeg) => optDeg.getOrElse(0))
 	// Also can be written in this way
 	//val tmp = rawGraph.outerJoinVertices[Int, Int](outDeg){(_, _, optDeg) => optDeg match {
@@ -378,7 +378,7 @@ Neighborhood Aggregation
 
 These functions can aggregate information about adjacent triplets. Among the three operators, `aggregateMessages` is the most important. It's a evolution from MapReduce Triplet which has been replaced. Besides, most algorithms' implementation depend on it.
 
-```
+```scala
 def collectNeighborIds(edgeDirection: EdgeDirection): VertexRDD[Array[VertexID]]
 def collectNeighbors(edgeDirection: EdgeDirection): VertexRDD[Array[(VertexID, VD)]]
 def aggregateMessages[Msg: ClassTag](
@@ -407,14 +407,14 @@ def aggregateMessages[Msg: ClassTag](
 ### How to use
 
 1. We can get the set of out-direction neighboring IDs for each vertex with `collectNeighborIds` operator.
-	```
+	```scala
 	scala> val tmp = graph.collectNeighborIds(EdgeDirection.Out)
 	scala> tmp.take(10)
 	res1: Array[(org.apache.spark.graphx.VertexId, Array[org.apache.spark.graphx.VertexId])] = Array((354796,Array(798944)), (672890,Array()), (129434,Array(110771, 119943)), (194402,Array(359291)), (199516,Array(26483, 190323, 193759, 280401, 329066, 342523, 367518, 398314, 417194, 427451, 458892, 459074, 485460, 502995, 505260, 514621, 660407, 798276, 810885, 835966)), (332918,Array(12304, 89384, 267989)), (170792,Array(227187, 255153, 400178, 453412, 512326, 592923, 663311, 666734, 864151)), (386896,Array(109021, 155460, 200406, 204397, 282107, 378570, 427843, 602779, 616132, 629079, 669605, 717650, 727162, 761159, 796410, 832809, 890838, 891178)), (691634,Array(13996, 32163, 33185, 39682, 193103, 197677, 520483, 598034, 727805, 747975, 836657)), (291526,Array(206053, 271366, 383159, 418...
 	```
 
 2. We can get the vertex set of neighboring vertex attributes for each vertex instead of the vertex IDs with `collectNeighbors` operator.
-	```
+	```scala
 	scala> val tmp = graph.collectNeighbors(EdgeDirection.Out)
 	scala> tmp.take(10)
 	res1: Array[(org.apache.spark.graphx.VertexId, Array[(org.apache.spark.graphx.VertexId, Int)])] = Array((354796,Array((798944,1))), (672890,Array()), (129434,Array((110771,1), (119943,1))), (194402,Array((359291,1))), (199516,Array((26483,1), (190323,1), (193759,1), (280401,1), (329066,1), (342523,1), (367518,1), (398314,1), (417194,1), (427451,1), (458892,1), (459074,1), (485460,1), (502995,1), (505260,1), (514621,1), (660407,1), (798276,1), (810885,1), (835966,1))), (332918,Array((12304,1), (89384,1), (267989,1))), (170792,Array((227187,1), (255153,1), (400178,1), (453412,1), (512326,1), (592923,1), (663311,1), (666734,1), (864151,1))), (386896,Array((109021,1), (155460,1), (200406,1), (204397,1), (282107,1), (378570,1), (427843,1), (602779,1), (616132,1), (629079,1), (669605,1), (717...
@@ -422,7 +422,7 @@ def aggregateMessages[Msg: ClassTag](
 
 3. Suppose the vertex IDs are the ages of the people. We want to find the number of people who are older than each person, and the average age of those older people. We can use `aggregateMessages` operator.
 	Firstly, let's generate a random graph with 100 vertices.
-	```
+	```scala
 	// Include Corresponding Classes
 	scala> import org.apache.spark._
 	scala> import org.apache.spark.graphx._
@@ -440,7 +440,7 @@ def aggregateMessages[Msg: ClassTag](
 	```
 
 	Then, use `aggregateMessages` to calculate the target:
-	```
+	```scala
 	scala> val olderPeople: VertexRDD[(Int, Double)] = graph.aggregateMessages[(Int, Double)] (
      | triplet => { //Map Function
      |   if (triplet.srcAttr > triplet.dstAttr) {
@@ -473,7 +473,7 @@ Cache Operators
 ### Caching Fuction
 
 It's a common tools to accelerate the speed and save the time.
-```
+```scala
 def persist(newLevel: StorageLevel = StorageLevel.MEMORY_ONLY): Graph[VD, ED]
 def cache(): Graph[VD, ED]
 def unpersistVertices(blocking: Boolean = true): Graph[VD, ED]
