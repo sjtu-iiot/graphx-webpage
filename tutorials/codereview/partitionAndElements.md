@@ -1,15 +1,10 @@
-<link rel="stylesheet" href="http://yandex.st/highlightjs/6.1/styles/default.min.css">
-<script src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
-<script>
-hljs.tabReplace = ' ';
-hljs.initHighlightingOnLoad();
-</script>
-
 Partition Strategy in GraphX
 =================================
 To process the graph in a distributed style, the graph needs to be represented in a distributed scheme. Normally, there are two kinds of graph partitioning, **vertex-cut** approach and **edge-cut** approach.
 
-[![](images/edge_cut_vs_vertex_cut.png)](images/edge_cut_vs_vertex_cut.png)
+
+<html><div align=center><img src="images/edge_cut_vs_vertex_cut.png" width = "800" height = "350" alt="images/edge_cut_vs_vertex_cut.png" align=center/></div></html>
+
 
 Spark GraphX adopts a vertex-cut approach to distributed graph partitioning. The strategy is programmed in [PartitionStrategy.scala.](https://github.com/apache/spark/blob/master/graphx/src/main/scala/org/apache/spark/graphx/PartitionStrategy.scala) Let’s look into this file.
 
@@ -74,7 +69,8 @@ As you see, E<v11, v1> is partitioned into P6. But it’s also clear that P1 con
 	}
 Let’s look at a simple, realistic graph.
 
-[![](images/vertex_routing_edge_tables.png)](images/vertex_routing_edge_tables.png)
+
+<html><div align=center><img src="images/vertex_routing_edge_tables.png" width = "800" height = "650" alt="images/vertex_routing_edge_tables.png" align=center/></div></html>
 
 Vertices A, B and C are in one partition; D, E, F are in the other. The edges are partitioned into two partitions as Edge Table. The Routing Table is very useful which records the cutting status of the vertices.
 
@@ -177,7 +173,7 @@ Let’s have a look at [Edge.scala](https://github.com/apache/spark/blob/master/
 	  
 Actually, **EdgeTriplet** equals to **Vertex join Edge**, which makes **EdgeTriplet** contains both information of vertices and edges. So it’s useful especially when we want to use the attributes of both the vertex and its connected edges.
 
-[![](images/triplet.png)](images/triplet.png)
+<html><div align=center><img src="images/triplet.png" width = "800" height = "150" alt="images/triplet.png" align=center/></div></html>
 
 The SQL style of such join operation is shown as following:
 
