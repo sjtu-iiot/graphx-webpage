@@ -74,17 +74,18 @@ A very large prime (`mixingPrime`) is used in order to balance the partitions. B
 
 As you see, `E<v11, v1>` is partitioned into P6. But it's also clear that P1 contains too many edges (far more than other partitions) which results in unbalance of partitioning. So mixingPrime is also used in `EdgePartition2D`.
 
-	case object EdgePartition2D extends PartitionStrategy {
-	  override def getPartition(src: VertexId, dst: VertexId, numParts: PartitionID): PartitionID = {
-	    val ceilSqrtNumParts: PartitionID = math.ceil(math.sqrt(numParts)).toInt
-	    val mixingPrime: VertexId = 1125899906842597L
-	    val col: PartitionID = (math.abs(src * mixingPrime) % ceilSqrtNumParts).toInt
-	    val row: PartitionID = (math.abs(dst * mixingPrime) % ceilSqrtNumParts).toInt
-	(col * ceilSqrtNumParts + row) % numParts
-	  }
-	}
+```scala
+case object EdgePartition2D extends PartitionStrategy {
+  override def getPartition(src: VertexId, dst: VertexId, numParts: PartitionID): PartitionID = {
+    val ceilSqrtNumParts: PartitionID = math.ceil(math.sqrt(numParts)).toInt
+    val mixingPrime: VertexId = 1125899906842597L
+    val col: PartitionID = (math.abs(src * mixingPrime) % ceilSqrtNumParts).toInt
+    val row: PartitionID = (math.abs(dst * mixingPrime) % ceilSqrtNumParts).toInt
+(col * ceilSqrtNumParts + row) % numParts
+  }
+}
+```
 Let’s look at a simple, realistic graph.
-
 
 <html><div align=center><img src="images/vertex_routing_edge_tables.png" width = "500" height = "360" alt="images/vertex_routing_edge_tables.png" align=center/></div></html>
 
