@@ -18,4 +18,4 @@ Available Tutorials
     * [Graph Generating and Data Loading](tutorials/codereview/createAndLoad.md)
     * [Graph Operators](tutorials/codereview/graphOperators.md)
     * [Pregel and Shortest Path Algorithm](tutorials/codereview/pregelAndSPA.md)
-    * PageRank and Triangle Count
+    * [PageRank](tutorials/codereview/PageRank.md) and [Triangle Count](tutorials/codereview/TriangleCount.md)
