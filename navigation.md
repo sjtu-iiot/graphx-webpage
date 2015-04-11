@@ -19,6 +19,8 @@
   * [Graph Generating and Data Loading](tutorials/codereview/createAndLoad.md)
   * [Graph Operators](tutorials/codereview/graphOperators.md)
   * [Pregel and Shortest Path Algorithm](tutorials/codereview/pregelAndSPA.md)
+  * [PageRank](tutorials/codereview/PageRank.md)
+  * [Triangle Count](tutorials/codereview/TriangleCount.md)
 
 [API Docs](docs.md)
 
